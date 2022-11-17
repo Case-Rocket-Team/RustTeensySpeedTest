@@ -1,7 +1,7 @@
 [package]
-name = "{{project-name}}"
+name = "rust-teensy-speed-test"
 version = "0.1.0"
-authors = ["{{authors}}"]
+authors = ["Serena"]
 edition = "2021"
 
 [dependencies]

@@ -4,6 +4,7 @@
 #![no_std]
 #![no_main]
 
+use cortex_m::peripheral::syst::SystClkSource;
 use teensy4_bsp as bsp;
 use teensy4_panic as _;
 use core::time::Duration;
@@ -19,6 +20,7 @@ const GPT_OCR: bsp::hal::gpt::OutputCompareRegister = bsp::hal::gpt::OutputCompa
 #[cortex_m_rt::entry]
 fn main() -> ! {
     let mut periphs = bsp::Peripherals::take().unwrap();
+    let mut cortex = cortex_m::Peripherals::take().unwrap();
 
     // Reduce the number of pins to those specific
     // to the Teensy 4.0.
@@ -60,11 +62,31 @@ fn main() -> ! {
     // See the `logging` module docs for more info.
     assert!(logging::init().is_ok());
 
+    log::info!("Starting test...");
+
+    // cortex.SYST.set_clock_source(SystClkSource::Core);
+    // cortex.SYST.set_reload(0x00ffffff);
+    // cortex.SYST.enable_counter();
+
+    cortex.DCB.enable_trace();
+    cortex.DWT.enable_cycle_counter();
+
+    let mut x = 0;
+
+    for i in 0..=1_000_000 {
+        x += i;
+        log::info!("{x}");
+    }
+
+    let dur = cortex_m::peripheral::DWT::cycle_count();
+
+    
+
     timer.set_enable(true);
     loop {
         led.toggle();
-        log::info!("Hello world");
-
+        //log::info!("Hello world");
+        log::info!("Took {dur} ticks: {x}, {}", cortex_m::peripheral::SYST::get_current());
         while !timer.output_compare_status(GPT_OCR).is_set() {}
         timer.output_compare_status(GPT_OCR).clear();
     }
